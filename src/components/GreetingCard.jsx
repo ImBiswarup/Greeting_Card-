@@ -1,21 +1,71 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/Appcontext';
+import { listAll, ref, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase';
+
 
 const GreetingCard = () => {
-    const { milestonesList, user, partner, couple } = useContext(AppContext)
+    const { user, partner, couple, milestonesList } = useContext(AppContext)
 
-    console.log(milestonesList.length);
+    console.log(user);
+
+    const [userFetchedImage, setUserFetchedImage] = useState([]);
+    const [partnerFetchedImage, setPartnerFetchedImage] = useState([]);
+    const [coupleFetchedImage, setCoupleFetchedImage] = useState([]);
+
+    const [fetchedImagesList, setFetchedImagesList] = useState([]);
+
+    const userRef = ref(storage, `/images/${user}/`)
+    const partnerRef = ref(storage, `/images/${partner}/`)
+    const coupleRef = ref(storage, `/images/${couple}/`)
+
+    const imageRef = ref(storage, `/images/`)
+
+    useEffect(() => {
+        listAll(imageRef).then((res) => {
+            res.items.forEach((item) => {
+                getDownloadURL(item).then((url) => {
+                    setFetchedImagesList((prev) => [...prev, url]);
+                });
+            });
+        });
+        listAll(userRef).then((res) => {
+            res.items.forEach((item) => {
+                getDownloadURL(item).then((url) => {
+                    setUserFetchedImage((prev) => [...prev, url]);
+                });
+            });
+        });
+        listAll(partnerRef).then((res) => {
+            res.items.forEach((item) => {
+                getDownloadURL(item).then((url) => {
+                    setPartnerFetchedImage((prev) => [...prev, url]);
+                });
+            });
+        });
+        listAll(coupleRef).then((res) => {
+            res.items.forEach((item) => {
+                getDownloadURL(item).then((url) => {
+                    setCoupleFetchedImage((prev) => [...prev, url]);
+                });
+            });
+        });
+
+        console.log(userFetchedImage, partnerFetchedImage, coupleFetchedImage);
+    }, []);
+
     return (
         <>
             <div className="bg-pink-200 h-full w-full">
                 <div className="flex flex-col items-center justify-center gap-y-5">
                     {/* top banner */}
 
+
                     <div className="flex justify-center items-center w-full bg-pink-500 py-8 rounded-full relative max-w-xl mx-auto mt-10">
                         {/* Left Image */}
                         <div className="absolute left-0 transform -translate-x-6">
                             <img
-                                src="https://via.placeholder.com/150"
+                                src={fetchedImagesList[0]}
                                 alt="Profile Left"
                                 className="w-28 h-28 rounded-full border-4 border-white object-cover"
                             />
@@ -27,12 +77,13 @@ const GreetingCard = () => {
                         {/* Right Image */}
                         <div className="absolute right-0 transform translate-x-6">
                             <img
-                                src="https://via.placeholder.com/150"
+                                src={fetchedImagesList[1]}
                                 alt="Profile Right"
                                 className="w-28 h-28 rounded-full border-4 border-white object-cover"
                             />
                         </div>
                     </div>
+
 
 
                     {/* middle part */}
@@ -45,7 +96,8 @@ const GreetingCard = () => {
                                     index % 2 == 0 ? (
                                         <div className="first-event w-[30%] px-4">
                                             <div className="image-text flex left-0 gap-x-2">
-                                                <img className='h-24 w-24 rounded' src="https://res.cloudinary.com/djrdw0sqz/image/upload/v1725100842/myImg_q3lyty.jpg" alt="image" />
+                                                <img className='h-24 w-24 rounded' src={fetchedImagesList[2]}
+                                                    alt="image" />
                                                 <div className="flex-col items-center">
                                                     <p className='text-2xl text-red-400'>{item.date}</p>
                                                     <p>{item.milestone}</p>

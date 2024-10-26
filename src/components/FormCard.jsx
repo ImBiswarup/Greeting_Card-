@@ -1,10 +1,24 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/Appcontext';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { v4 } from 'uuid';
+
 
 
 const FormCard = () => {
-  const { user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestone, milestonesList, setMilestonesList, milestoneOptions } = useContext(AppContext)
+  const { user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestonesList, setMilestonesList, milestoneOptions, setFetchedImagesList } = useContext(AppContext);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const uploadAndFetchImageURL = async (image, path) => {
+    if (!image) return null;
+    const imageRef = ref(storage, `${path}/${image.name + v4()}`);
+    await uploadBytes(imageRef, image);
+    return await getDownloadURL(imageRef);
+  };
 
 
   const handleMilestoneChange = (index, field, value) => {
@@ -22,7 +36,41 @@ const FormCard = () => {
     setMilestonesList([...milestonesList, { milestone: '', date: '' }]);
   };
 
-  console.log(user, partner, couple, milestone, milestonesList);
+  const uploadUserImage = () => {
+    if (!userImage) return;
+
+    const userImageRef = ref(storage, `images/${user}/${userImage.name + v4()}}`);
+    uploadBytes(userImageRef, userImage)
+      .then(() => alert('user image uploaded'))
+  }
+  const uploadPartnerImage = () => {
+    if (!partnerimage) return;
+
+    const partnerImageRef = ref(storage, `images/${partnerimage.name + v4()}}`);
+    uploadBytes(partnerImageRef, userImage)
+      .then(() => alert('partner image uploaded'))
+  }
+  const uploadCoupleImage = () => {
+    if (!coupleimage) return;
+
+    const coupleImageRef = ref(storage, `images/${coupleimage.name + v4()}}`);
+    uploadBytes(coupleImageRef, userImage)
+      .then(() => alert('couple image uploaded'))
+  }
+
+  const uploadItems = async () => {
+    setLoading(true);
+    const userURL = await uploadAndFetchImageURL(userImage, `images/${user}`);
+    const partnerURL = await uploadAndFetchImageURL(partnerimage, `images/${partner}`);
+    const coupleURL = await uploadAndFetchImageURL(coupleimage, `images/${couple}`);
+
+    setFetchedImagesList([userURL, partnerURL, coupleURL]);
+    setLoading(false);
+    navigate(`/${user}`);
+  };
+
+  // console.log(user, partner, couple, milestone, milestonesList);
+  console.log(userImage, partnerimage, coupleimage);
 
   return (
     <div>
@@ -64,24 +112,21 @@ const FormCard = () => {
               type="file"
               name="image"
               id="image"
-              value={userImage}
-              onChange={(e) => { setUserImage(e.target.value) }} />
+              onChange={(e) => { setUserImage(e.target.files[0]) }} />
             <p><span className='text-xl'>Partner Image</span> (recomemded aspect ratio of image 1:1)</p>
             <input
               className='w-full rounded bg-pink-200 h-10'
               type="file"
               name="partnerimage"
               id="partnerimage"
-              value={partnerimage}
-              onChange={(e) => { setPartnerimage(e.target.value) }} />
+              onChange={(e) => { setPartnerimage(e.target.files[0]) }} />
             <p><span className='text-xl'>Couple Image</span> (recomemded aspect ratio of image 1:1)</p>
             <input
               className='w-full rounded bg-pink-200 h-10'
               type="file"
               name="coupleimage"
               id="coupleimage"
-              value={coupleimage}
-              onChange={(e) => { setCoupleimage(e.target.value) }} />
+              onChange={(e) => { setCoupleimage(e.target.files[0]) }} />
           </div>
           {/* second box */}
           <div className="border-dashed border-2 border-black p-5 mt-5 rounded-xl w-[45%]">
@@ -122,27 +167,17 @@ const FormCard = () => {
               Add Milestone
             </button>
 
-            {/* Display the list of milestones
-            <div className="mt-5">
-                <h2 className="text-xl font-semibold">Journey Milestones</h2>
-                {milestonesList.length > 0 ? (
-                    <ul className="list-disc pl-5 mt-3">
-                        {milestonesList.map((item, index) => (
-                            <li key={index} className="text-lg">
-                                {item.milestone} - {item.date}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="mt-3">No milestones added yet.</p>
-                )}
-            </div> */}
           </div>
           {/* submit button */}
           <div className="button flex items-center justify-center my-8">
-            <Link to={`/${user}`}>
-              <button className='p-3 bg-purple-400 hover:bg-purple-600 rounded transition hover:text-white font-bold text-xl'>Create Timeline</button>
-            </Link>
+            {/* <Link to={`/${user}`}> */}
+            <button
+              onClick={uploadItems}
+              disabled={loading}
+              className='p-3 bg-purple-400 hover:bg-purple-600 rounded transition hover:text-white font-bold text-xl'>
+              {loading ? 'Creating Timeline...' : 'Create Timeline'}
+            </button>
+            {/* </Link> */}
           </div>
         </div>
       </div>

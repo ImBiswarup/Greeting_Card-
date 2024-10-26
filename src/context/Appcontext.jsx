@@ -12,6 +12,9 @@ export const AppProvider = ({ children }) => {
     const [milestone, setMilestone] = useState([]);
     const [milestoneDate, setMilestoneDate] = useState([]);
     const [milestonesList, setMilestonesList] = useState([]);
+    const [fetchedImagesList, setFetchedImagesList] = useState([]); // Add this line
+
+
 
     const milestoneOptions = [
         'First Meet', 
@@ -22,7 +25,7 @@ export const AppProvider = ({ children }) => {
 
 
     return (
-        <AppContext.Provider value={{ user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestone, setMilestone, milestoneDate, setMilestoneDate, milestonesList, setMilestonesList, milestoneOptions }}>
+        <AppContext.Provider value={{ user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestone, setMilestone, milestoneDate, setMilestoneDate, milestonesList, setMilestonesList, milestoneOptions, fetchedImagesList, setFetchedImagesList }}>
             {children}
         </AppContext.Provider>
     );
