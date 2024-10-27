@@ -9,23 +9,23 @@ export const AppProvider = ({ children }) => {
     const [userImage, setUserImage] = useState('');
     const [partnerimage, setPartnerimage] = useState('');
     const [coupleimage, setCoupleimage] = useState('');
-    const [milestone, setMilestone] = useState([]);
-    const [milestoneDate, setMilestoneDate] = useState([]);
+    // const [milestone, setMilestone] = useState([]);
+    // const [milestoneDate, setMilestoneDate] = useState([]);
     const [milestonesList, setMilestonesList] = useState([]);
-    const [fetchedImagesList, setFetchedImagesList] = useState([]); // Add this line
+    const [fetchedImagesList, setFetchedImagesList] = useState([]);
 
 
 
     const milestoneOptions = [
-        'First Meet', 
-        'Fall in Love', 
-        'First Date', 
+        'First Meet',
+        'Fall in Love',
+        'First Date',
         'Deep Love'
     ];
 
 
     return (
-        <AppContext.Provider value={{ user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestone, setMilestone, milestoneDate, setMilestoneDate, milestonesList, setMilestonesList, milestoneOptions, fetchedImagesList, setFetchedImagesList }}>
+        <AppContext.Provider value={{ user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestonesList, setMilestonesList, milestoneOptions, fetchedImagesList, setFetchedImagesList }}>
             {children}
         </AppContext.Provider>
     );

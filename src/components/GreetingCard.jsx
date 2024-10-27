@@ -7,7 +7,7 @@ import { storage } from '../firebase';
 const GreetingCard = () => {
     const { user, partner, couple, milestonesList } = useContext(AppContext)
 
-    console.log(user);
+    // console.log(user);
 
     const [userFetchedImage, setUserFetchedImage] = useState([]);
     const [partnerFetchedImage, setPartnerFetchedImage] = useState([]);
@@ -15,44 +15,60 @@ const GreetingCard = () => {
 
     const [fetchedImagesList, setFetchedImagesList] = useState([]);
 
-    const userRef = ref(storage, `/images/${user}/`)
-    const partnerRef = ref(storage, `/images/${partner}/`)
-    const coupleRef = ref(storage, `/images/${couple}/`)
+    const userRef = ref(storage, `/user/${user}/`)
+    const partnerRef = ref(storage, `/partner/${partner}/`)
+    const coupleRef = ref(storage, `/couple/${couple}/`)
 
     const imageRef = ref(storage, `/images/`)
 
-    useEffect(() => {
-        listAll(imageRef).then((res) => {
-            res.items.forEach((item) => {
-                getDownloadURL(item).then((url) => {
-                    setFetchedImagesList((prev) => [...prev, url]);
-                });
-            });
-        });
-        listAll(userRef).then((res) => {
-            res.items.forEach((item) => {
-                getDownloadURL(item).then((url) => {
-                    setUserFetchedImage((prev) => [...prev, url]);
-                });
-            });
-        });
-        listAll(partnerRef).then((res) => {
-            res.items.forEach((item) => {
-                getDownloadURL(item).then((url) => {
-                    setPartnerFetchedImage((prev) => [...prev, url]);
-                });
-            });
-        });
-        listAll(coupleRef).then((res) => {
-            res.items.forEach((item) => {
-                getDownloadURL(item).then((url) => {
-                    setCoupleFetchedImage((prev) => [...prev, url]);
-                });
-            });
-        });
+    // useEffect(() => {
+    //     listAll(imageRef).then((res) => {
+    //         res.items.forEach((item) => {
+    //             getDownloadURL(item).then((url) => {
+    //                 setFetchedImagesList((prev) => [...prev, url]);
+    //             });
+    //         });
+    //     });
+    //     listAll(userRef).then((res) => {
+    //         res.items.forEach((item) => {
+    //             getDownloadURL(item).then((url) => {
+    //                 setUserFetchedImage((prev) => [...prev, url]);
+    //             });
+    //         });
+    //     });
+    //     listAll(partnerRef).then((res) => {
+    //         res.items.forEach((item) => {
+    //             getDownloadURL(item).then((url) => {
+    //                 setPartnerFetchedImage((prev) => [...prev, url]);
+    //             });
+    //         });
+    //     });
+    //     listAll(coupleRef).then((res) => {
+    //         res.items.forEach((item) => {
+    //             getDownloadURL(item).then((url) => {
+    //                 setCoupleFetchedImage((prev) => [...prev, url]);
+    //             });
+    //         });
+    //     });
 
-        console.log(userFetchedImage, partnerFetchedImage, coupleFetchedImage);
-    }, []);
+    //     console.log(userFetchedImage, partnerFetchedImage, coupleFetchedImage);
+    // }, []);
+
+    
+    useEffect(() => {
+        if (!fetchedImagesList.length) {
+            const imageRefs = [
+                ref(storage, `user/${user}`),
+                ref(storage, `partner/${partner}`),
+                ref(storage, `couple/${couple}`)
+            ];
+            Promise.all(imageRefs.map(ref => listAll(ref).then(res => Promise.all(res.items.map(item => getDownloadURL(item))))))
+                .then(urls => setFetchedImagesList(urls.flat()));
+        }
+    }, [fetchedImagesList, setFetchedImagesList, user, partner, couple]);
+
+    console.log(fetchedImagesList.length);
+
 
     return (
         <>
@@ -65,9 +81,9 @@ const GreetingCard = () => {
                         {/* Left Image */}
                         <div className="absolute left-0 transform -translate-x-6">
                             <img
-                                src={fetchedImagesList[0]}
+                                src={fetchedImagesList[fetchedImagesList.length - 3]}
                                 alt="Profile Left"
-                                className="w-28 h-28 rounded-full border-4 border-white object-cover"
+                                className="w-28 h-28 rounded-full border-4 border-white object-fit"
                             />
                         </div>
                         {/* Title */}
@@ -77,9 +93,9 @@ const GreetingCard = () => {
                         {/* Right Image */}
                         <div className="absolute right-0 transform translate-x-6">
                             <img
-                                src={fetchedImagesList[1]}
+                                src={fetchedImagesList[fetchedImagesList.length - 2]}
                                 alt="Profile Right"
-                                className="w-28 h-28 rounded-full border-4 border-white object-cover"
+                                className="w-28 h-28 rounded-full border-4 border-white object-fit"
                             />
                         </div>
                     </div>
@@ -94,9 +110,9 @@ const GreetingCard = () => {
                             <>
                                 {
                                     index % 2 == 0 ? (
-                                        <div className="first-event w-[30%] px-4">
+                                        <div key={index} className="first-event w-[30%] px-4">
                                             <div className="image-text flex left-0 gap-x-2">
-                                                <img className='h-24 w-24 rounded' src={fetchedImagesList[2]}
+                                                <img className='h-24 w-24 rounded-full object-fit' src={fetchedImagesList[fetchedImagesList.length - 1]}
                                                     alt="image" />
                                                 <div className="flex-col items-center">
                                                     <p className='text-2xl text-red-400'>{item.date}</p>
@@ -133,7 +149,7 @@ const GreetingCard = () => {
                         milestonesList.length % 2 == 0 ? (
                             <div className="first-event w-[30%] px-4">
                                 <div className={`image-text flex gap-x-3 ${milestonesList.length % 2 === 0 ? "justify-start" : "justify-end"}`}>
-                                    <img className='h-24 w-24 rounded' src="https://res.cloudinary.com/djrdw0sqz/image/upload/v1725100842/myImg_q3lyty.jpg" alt="image" />
+                                    <img className='h-24 w-24 rounded-full object-fill' src={fetchedImagesList[fetchedImagesList.length - 1]} alt="image" />
                                     <div className="flex-col items-center">
                                         <p className='text-2xl text-red-400'>{couple}</p>
                                         <p>Loveto for life</p>
@@ -148,7 +164,7 @@ const GreetingCard = () => {
                                         <p className='text-2xl text-red-400'>{couple}</p>
                                         <p>Loveto for life</p>
                                     </div>
-                                    <img className='h-24 w-24 rounded' src="https://res.cloudinary.com/djrdw0sqz/image/upload/v1725100842/myImg_q3lyty.jpg" alt="image" />
+                                    <img className='h-24 w-24 rounded' src={fetchedImagesList[fetchedImagesList.length - 1]} alt="image" />
                                 </div>
 
                             </div>

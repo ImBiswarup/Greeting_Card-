@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/Appcontext';
 import { Link, useNavigate } from "react-router-dom";
 import { storage } from '../firebase';
@@ -13,12 +13,29 @@ const FormCard = () => {
 
   const navigate = useNavigate();
 
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) setUser(storedUser);
+  }, [setUser]);
+
+  useEffect(() => {
+    if (user) localStorage.setItem('user', user);
+  }, [user]);
+
   const uploadAndFetchImageURL = async (image, path) => {
     if (!image) return null;
     const imageRef = ref(storage, `${path}/${image.name + v4()}`);
     await uploadBytes(imageRef, image);
     return await getDownloadURL(imageRef);
   };
+
+  // const uploadAndFetchImageURL = async (image, path) => {
+  //   if (!image) return null;
+  //   const imageRef = ref(storage, `${path}/${image.name + v4()}`);
+  //   await uploadBytes(imageRef, image);
+  //   return await getDownloadURL(imageRef);
+  // };
 
 
   const handleMilestoneChange = (index, field, value) => {
@@ -34,6 +51,16 @@ const FormCard = () => {
 
   const addMilestone = () => {
     setMilestonesList([...milestonesList, { milestone: '', date: '' }]);
+  };
+
+  const uploadItems = async () => {
+    setLoading(true);
+    const userURL = await uploadAndFetchImageURL(userImage, `user/${user}`);
+    const partnerURL = await uploadAndFetchImageURL(partnerimage, `partner/${partner}`);
+    const coupleURL = await uploadAndFetchImageURL(coupleimage, `couple/${couple}`);
+    setFetchedImagesList([userURL, partnerURL, coupleURL]);
+    setLoading(false);
+    navigate(`/${user}`);
   };
 
   const uploadUserImage = () => {
@@ -58,16 +85,16 @@ const FormCard = () => {
       .then(() => alert('couple image uploaded'))
   }
 
-  const uploadItems = async () => {
-    setLoading(true);
-    const userURL = await uploadAndFetchImageURL(userImage, `images/${user}`);
-    const partnerURL = await uploadAndFetchImageURL(partnerimage, `images/${partner}`);
-    const coupleURL = await uploadAndFetchImageURL(coupleimage, `images/${couple}`);
+  // const uploadItems = async () => {
+  //   setLoading(true);
+  //   const userURL = await uploadAndFetchImageURL(userImage, `user/${user}`);
+  //   const partnerURL = await uploadAndFetchImageURL(partnerimage, `partner/${partner}`);
+  //   const coupleURL = await uploadAndFetchImageURL(coupleimage, `couple/${couple}`);
 
-    setFetchedImagesList([userURL, partnerURL, coupleURL]);
-    setLoading(false);
-    navigate(`/${user}`);
-  };
+  //   setFetchedImagesList([userURL, partnerURL, coupleURL]);
+  //   setLoading(false);
+  //   navigate(`/${user}`);
+  // };
 
   // console.log(user, partner, couple, milestone, milestonesList);
   console.log(userImage, partnerimage, coupleimage);
