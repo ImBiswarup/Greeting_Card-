@@ -17,11 +17,24 @@ export const AppProvider = ({ children }) => {
 
 
     const milestoneOptions = [
-        'First Meet',
-        'Fall in Love',
-        'First Date',
-        'Deep Love'
+        {
+            name: 'First Meet',
+            image: 'https://res.cloudinary.com/djrdw0sqz/image/upload/v1722104929/yt_v9ab9c.jpg'
+        },
+        {
+            name: 'Fall in Love',
+            image: 'https://res.cloudinary.com/djrdw0sqz/image/upload/v1722104929/yt_v9ab9c.jpg'
+        },
+        {
+            name: 'First Date',
+            image: 'https://res.cloudinary.com/djrdw0sqz/image/upload/v1722104929/yt_v9ab9c.jpg'
+        },
+        {
+            name: 'Deep Love',
+            image: 'https://res.cloudinary.com/djrdw0sqz/image/upload/v1722104929/yt_v9ab9c.jpg'
+        }
     ];
+
 
 
     return (

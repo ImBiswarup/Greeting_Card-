@@ -2,12 +2,12 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/Appcontext';
 import { listAll, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { useLocalStorageState } from '../helper/useLocalStorageState';
 
 
 const GreetingCard = () => {
-    const { user, partner, couple, milestonesList } = useContext(AppContext)
-
-    // console.log(user);
 
     const [userFetchedImage, setUserFetchedImage] = useState([]);
     const [partnerFetchedImage, setPartnerFetchedImage] = useState([]);
@@ -15,59 +15,96 @@ const GreetingCard = () => {
 
     const [fetchedImagesList, setFetchedImagesList] = useState([]);
 
+    const { user, setUser,
+        partner, setPartner,
+        couple, setCouple,
+        milestonesList, setMilestonesList,
+        userImage, setUserImage,
+        partnerimage, setPartnerimage,
+        coupleimage, setCoupleimage,
+    } = useContext(AppContext);
+
+    console.log(milestonesList);
+
+
+    // useEffect(() => {
+    //     const storedUserImage = localStorage.getItem('userImage');
+    //     const storedPartnerImage = localStorage.getItem('partnerimage');
+    //     const storedCoupleImage = localStorage.getItem('coupleimage');
+    //     const storedMilestonesList = localStorage.getItem('milestonesList');
+
+    //     if (storedUserImage) setUser(storedUserImage);
+    //     if (storedPartnerImage) setPartner(storedPartnerImage);
+    //     if (storedCoupleImage) setCouple(storedCoupleImage);
+    //     if (storedMilestonesList) setMilestonesList(JSON.parse(storedMilestonesList));
+    // }, [setUser, setPartner, setCouple, setMilestonesList]);
+
+
+    // useEffect(() => {
+    //     if (userImage) localStorage.setuserImage('userImage', userImage);
+    // }, [userImage]);
+
+    // useEffect(() => {
+    //     if (partnerimage) localStorage.setPartnerimage('partnerimage', partnerimage);
+    // }, [partnerimage]);
+
+    // useEffect(() => {
+    //     if (coupleimage) localStorage.setCoupleimage('coupleimage', coupleimage);
+    // }, [coupleimage]);
+
+    // // useEffect(() => {
+    // //     if (milestonesList) localStorage.setMilestonesList('milestonesList', JSON.stringify(milestonesList));
+    // // }, [milestonesList]);
+
+    // const useLocalStorageState = (key, state, setState) => {
+    //     useEffect(() => {
+    //         const storedValue = localStorage.getItem(key);
+    //         if (storedValue) setState(storedValue);
+    //     }, [setState]);
+
+    //     useEffect(() => {
+    //         if (state) localStorage.setItem(key, state);
+    //     }, [key, state]);
+    // };
+
+    useLocalStorageState('user', user, setUser);
+    useLocalStorageState('partner', partner, setPartner);
+    useLocalStorageState('couple', couple, setCouple);
+    useLocalStorageState('imageList', fetchedImagesList, setFetchedImagesList)
+    //   useLocalStorageState('milestonesList', milestonesList, setMilestonesList);
+
+
+
     const userRef = ref(storage, `/user/${user}/`)
     const partnerRef = ref(storage, `/partner/${partner}/`)
     const coupleRef = ref(storage, `/couple/${couple}/`)
 
     const imageRef = ref(storage, `/images/`)
 
-    // useEffect(() => {
-    //     listAll(imageRef).then((res) => {
-    //         res.items.forEach((item) => {
-    //             getDownloadURL(item).then((url) => {
-    //                 setFetchedImagesList((prev) => [...prev, url]);
-    //             });
-    //         });
-    //     });
-    //     listAll(userRef).then((res) => {
-    //         res.items.forEach((item) => {
-    //             getDownloadURL(item).then((url) => {
-    //                 setUserFetchedImage((prev) => [...prev, url]);
-    //             });
-    //         });
-    //     });
-    //     listAll(partnerRef).then((res) => {
-    //         res.items.forEach((item) => {
-    //             getDownloadURL(item).then((url) => {
-    //                 setPartnerFetchedImage((prev) => [...prev, url]);
-    //             });
-    //         });
-    //     });
-    //     listAll(coupleRef).then((res) => {
-    //         res.items.forEach((item) => {
-    //             getDownloadURL(item).then((url) => {
-    //                 setCoupleFetchedImage((prev) => [...prev, url]);
-    //             });
-    //         });
-    //     });
 
-    //     console.log(userFetchedImage, partnerFetchedImage, coupleFetchedImage);
-    // }, []);
 
-    
     useEffect(() => {
         if (!fetchedImagesList.length) {
-            const imageRefs = [
-                ref(storage, `user/${user}`),
-                ref(storage, `partner/${partner}`),
-                ref(storage, `couple/${couple}`)
-            ];
-            Promise.all(imageRefs.map(ref => listAll(ref).then(res => Promise.all(res.items.map(item => getDownloadURL(item))))))
-                .then(urls => setFetchedImagesList(urls.flat()));
-        }
-    }, [fetchedImagesList, setFetchedImagesList, user, partner, couple]);
+            // const imageRefs = [
+            //     ref(storage, `user/${user}`),
+            //     ref(storage, `partner/${partner}`),
+            //     ref(storage, `couple/${couple}`)
+            // ];
+            // Promise.all(imageRefs.map(ref => listAll(ref).then(res => Promise.all(res.items.map(item => getDownloadURL(item))))))
+            //     .then(urls => setFetchedImagesList(urls.flat()));
+            const imageRef = ref(storage, `/images/${user}`);
 
-    console.log(fetchedImagesList.length);
+            listAll(imageRef)
+                .then((res) =>
+                    Promise.all(res.items.map((item) => getDownloadURL(item)))
+                )
+                .then((urls) => setFetchedImagesList(urls))
+                .catch((error) => console.error("Failed to fetch images:", error));
+        }
+    }, []);
+
+    console.log(fetchedImagesList);
+
 
 
     return (
@@ -81,7 +118,7 @@ const GreetingCard = () => {
                         {/* Left Image */}
                         <div className="absolute left-0 transform -translate-x-6">
                             <img
-                                src={fetchedImagesList[fetchedImagesList.length - 3]}
+                                src={[fetchedImagesList[2]]}
                                 alt="Profile Left"
                                 className="w-28 h-28 rounded-full border-4 border-white object-fit"
                             />
@@ -93,7 +130,7 @@ const GreetingCard = () => {
                         {/* Right Image */}
                         <div className="absolute right-0 transform translate-x-6">
                             <img
-                                src={fetchedImagesList[fetchedImagesList.length - 2]}
+                                src={[fetchedImagesList[1]]}
                                 alt="Profile Right"
                                 className="w-28 h-28 rounded-full border-4 border-white object-fit"
                             />
@@ -112,7 +149,7 @@ const GreetingCard = () => {
                                     index % 2 == 0 ? (
                                         <div key={index} className="first-event w-[30%] px-4">
                                             <div className="image-text flex left-0 gap-x-2">
-                                                <img className='h-24 w-24 rounded-full object-fit' src={fetchedImagesList[fetchedImagesList.length - 1]}
+                                                <img className='h-24 w-24 rounded-full object-fit' src={item.image}
                                                     alt="image" />
                                                 <div className="flex-col items-center">
                                                     <p className='text-2xl text-red-400'>{item.date}</p>
@@ -124,13 +161,13 @@ const GreetingCard = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div div className="second-event w-[30%] px-4" >
+                                        <div key={index} div className="second-event w-[30%] px-4" >
                                             <div className="image-text flex justify-end right-0 gap-x-2">
                                                 <div className="flex-col items-center">
                                                     <p className='text-2xl text-red-400'>{item.date}</p>
                                                     <p>{item.milestone}</p>
                                                 </div>
-                                                <img className='h-24 w-24 rounded' src="https://res.cloudinary.com/djrdw0sqz/image/upload/v1725100842/myImg_q3lyty.jpg" alt="image" />
+                                                <img className='h-24 w-24 rounded' src={item.image} alt="image" />
                                             </div>
                                             <div className="svg text-center px-10">
                                                 <img className={`w-full h-full`} src="https://loveto.greetsu.com/Vector%206.svg" alt="svg" />
@@ -149,7 +186,7 @@ const GreetingCard = () => {
                         milestonesList.length % 2 == 0 ? (
                             <div className="first-event w-[30%] px-4">
                                 <div className={`image-text flex gap-x-3 ${milestonesList.length % 2 === 0 ? "justify-start" : "justify-end"}`}>
-                                    <img className='h-24 w-24 rounded-full object-fill' src={fetchedImagesList[fetchedImagesList.length - 1]} alt="image" />
+                                    <img className='h-24 w-24 rounded-full object-fill' src={fetchedImagesList[0]} alt="image" />
                                     <div className="flex-col items-center">
                                         <p className='text-2xl text-red-400'>{couple}</p>
                                         <p>Loveto for life</p>
@@ -164,7 +201,7 @@ const GreetingCard = () => {
                                         <p className='text-2xl text-red-400'>{couple}</p>
                                         <p>Loveto for life</p>
                                     </div>
-                                    <img className='h-24 w-24 rounded' src={fetchedImagesList[fetchedImagesList.length - 1]} alt="image" />
+                                    <img className='h-24 w-24 rounded' src={fetchedImagesList[0]} alt="image" />
                                 </div>
 
                             </div>

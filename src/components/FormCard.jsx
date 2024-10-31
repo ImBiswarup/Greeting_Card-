@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { v4 } from 'uuid';
+import { useLocalStorageState } from '../helper/useLocalStorageState';
+
 
 
 
@@ -13,36 +15,89 @@ const FormCard = () => {
 
   const navigate = useNavigate();
 
+  console.log(milestoneOptions);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) setUser(storedUser);
-  }, [setUser]);
 
-  useEffect(() => {
-    if (user) localStorage.setItem('user', user);
-  }, [user]);
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem('user');
+  //   if (storedUser) setUser(storedUser);
+  // }, [setUser]);
 
-  const uploadAndFetchImageURL = async (image, path) => {
-    if (!image) return null;
-    const imageRef = ref(storage, `${path}/${image.name + v4()}`);
-    await uploadBytes(imageRef, image);
-    return await getDownloadURL(imageRef);
-  };
+  // useEffect(() => {
+  //   if (user) localStorage.setItem('user', user);
+  // }, [user]);
 
-  // const uploadAndFetchImageURL = async (image, path) => {
-  //   if (!image) return null;
-  //   const imageRef = ref(storage, `${path}/${image.name + v4()}`);
-  //   await uploadBytes(imageRef, image);
-  //   return await getDownloadURL(imageRef);
+  // useEffect(() => {
+  //   const storedPartner = localStorage.getItem('partner');
+  //   if (storedPartner) setPartner(storedPartner);
+  // }, [setPartner]);
+
+  // useEffect(() => {
+  //   if (partner) localStorage.setItem('partner', partner);
+  // }, [partner]);
+
+  // useEffect(() => {
+  //   const storedCouple = localStorage.getItem('couple');
+  //   if (storedCouple) setCouple(storedCouple);
+  // }, [setPartner]);
+
+  // useEffect(() => {
+  //   if (couple) localStorage.setItem('couple', couple);
+  // }, [couple]);
+
+  // useEffect(() => {
+  //   const storedMilestoneList = JSON.parse(localStorage.getItem('milestonelist'));
+  //   if (storedMilestoneList) setMilestonesList(storedMilestoneList);
+  // }, [setMilestonesList]);
+
+  // useEffect(() => {
+  //   if (milestonesList.length) {
+  //     localStorage.setItem('milestonelist', JSON.stringify(milestonesList));
+  //   }
+  // }, [milestonesList]);
+
+
+  // const useLocalStorageState = (key, state, setState) => {
+  //   useEffect(() => {
+  //     const storedValue = localStorage.getItem(key);
+  //     if (storedValue) setState(storedValue);
+  //   }, [setState]);
+
+  //   useEffect(() => {
+  //     if (state) localStorage.setItem(key, state);
+  //   }, [key, state]);
   // };
+
+  useLocalStorageState('user', user, setUser);
+  useLocalStorageState('partner', partner, setPartner);
+  useLocalStorageState('couple', couple, setCouple);
+  // useLocalStorageState('milestonesList', milestonesList, setMilestonesList);
+
+
+
 
 
   const handleMilestoneChange = (index, field, value) => {
     const updatedList = [...milestonesList];
+
+    if (field === 'milestone') {
+      // Find the image URL for the selected milestone
+      const selectedMilestone = milestoneOptions.find(option => option.name === value);
+      if (selectedMilestone) {
+        updatedList[index].image = selectedMilestone.image;
+        console.log(`Milestone selected: ${value}, Image URL set: ${selectedMilestone.image}`);
+      } else {
+        updatedList[index].image = '';
+        console.log(`Milestone selected: ${value}, No image URL found.`);
+      }
+    }
+
     updatedList[index][field] = value;
     setMilestonesList(updatedList);
+
+    console.log("Updated milestonesList:", updatedList); // Check the updated milestonesList
   };
+
 
   const handleDeleteMilestone = (index) => {
     const updatedList = milestonesList.filter((_, i) => i !== index);
@@ -50,53 +105,33 @@ const FormCard = () => {
   };
 
   const addMilestone = () => {
-    setMilestonesList([...milestonesList, { milestone: '', date: '' }]);
+    setMilestonesList([...milestonesList, { milestone: '', date: '', image: '' }]);
+  };
+
+  const uploadAndFetchImageURL = async (image, prefix) => {
+    if (!image) return null;
+    const imageRef = ref(storage, `images/${user}/${prefix}_${image.name + v4()}`);
+    await uploadBytes(imageRef, image);
+    return await getDownloadURL(imageRef);
   };
 
   const uploadItems = async () => {
     setLoading(true);
-    const userURL = await uploadAndFetchImageURL(userImage, `user/${user}`);
-    const partnerURL = await uploadAndFetchImageURL(partnerimage, `partner/${partner}`);
-    const coupleURL = await uploadAndFetchImageURL(coupleimage, `couple/${couple}`);
-    setFetchedImagesList([userURL, partnerURL, coupleURL]);
-    setLoading(false);
-    navigate(`/${user}`);
+    try {
+      const [userURL, partnerURL, coupleURL] = await Promise.all([
+        uploadAndFetchImageURL(userImage, "user"),
+        uploadAndFetchImageURL(partnerimage, "partner"),
+        uploadAndFetchImageURL(coupleimage, "couple")
+      ]);
+      setFetchedImagesList([userURL, partnerURL, coupleURL]);
+      navigate(`/${user}`);
+    } catch (error) {
+      console.error("Failed to upload images:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const uploadUserImage = () => {
-    if (!userImage) return;
-
-    const userImageRef = ref(storage, `images/${user}/${userImage.name + v4()}}`);
-    uploadBytes(userImageRef, userImage)
-      .then(() => alert('user image uploaded'))
-  }
-  const uploadPartnerImage = () => {
-    if (!partnerimage) return;
-
-    const partnerImageRef = ref(storage, `images/${partnerimage.name + v4()}}`);
-    uploadBytes(partnerImageRef, userImage)
-      .then(() => alert('partner image uploaded'))
-  }
-  const uploadCoupleImage = () => {
-    if (!coupleimage) return;
-
-    const coupleImageRef = ref(storage, `images/${coupleimage.name + v4()}}`);
-    uploadBytes(coupleImageRef, userImage)
-      .then(() => alert('couple image uploaded'))
-  }
-
-  // const uploadItems = async () => {
-  //   setLoading(true);
-  //   const userURL = await uploadAndFetchImageURL(userImage, `user/${user}`);
-  //   const partnerURL = await uploadAndFetchImageURL(partnerimage, `partner/${partner}`);
-  //   const coupleURL = await uploadAndFetchImageURL(coupleimage, `couple/${couple}`);
-
-  //   setFetchedImagesList([userURL, partnerURL, coupleURL]);
-  //   setLoading(false);
-  //   navigate(`/${user}`);
-  // };
-
-  // console.log(user, partner, couple, milestone, milestonesList);
   console.log(userImage, partnerimage, coupleimage);
 
   return (
@@ -163,20 +198,20 @@ const FormCard = () => {
               <div key={index} className="flex items-center justify-between gap-x-5 mt-2">
                 <div className="w-[45%]">
                   <select
-                    value={milestoneObj.milestone}
+                    value={milestoneObj.milestone || ""}
                     onChange={(e) => handleMilestoneChange(index, 'milestone', e.target.value)}
                     className="border border-gray-300 rounded-lg w-full h-10 pl-3 bg-purple-200"
                   >
                     <option value="" disabled>Select a milestone</option>
                     {milestoneOptions.map((option, i) => (
-                      <option key={i} value={option}>{option}</option>
+                      <option key={i} value={option.name || option}>{option.name || option}</option>
                     ))}
                   </select>
                 </div>
                 <div className="w-[45%] flex items-center">
                   <input
                     type="date"
-                    value={milestoneObj.date}
+                    value={milestoneObj.date || ""}
                     onChange={(e) => handleMilestoneChange(index, 'date', e.target.value)}
                     className="rounded h-10 pl-3 bg-purple-200 w-full"
                   />
@@ -186,6 +221,7 @@ const FormCard = () => {
                 </div>
               </div>
             ))}
+
 
             <button
               className='flex mx-auto bg-purple-400 rounded mt-5 p-3 hover:bg-purple-700 transition hover:text-white text-xl font-bold'
