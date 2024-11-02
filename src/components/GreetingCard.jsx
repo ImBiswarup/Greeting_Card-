@@ -9,10 +9,6 @@ import { useLocalStorageState } from '../helper/useLocalStorageState';
 
 const GreetingCard = () => {
 
-    const [userFetchedImage, setUserFetchedImage] = useState([]);
-    const [partnerFetchedImage, setPartnerFetchedImage] = useState([]);
-    const [coupleFetchedImage, setCoupleFetchedImage] = useState([]);
-
     const [fetchedImagesList, setFetchedImagesList] = useState([]);
 
     const { user, setUser,
@@ -24,95 +20,80 @@ const GreetingCard = () => {
         coupleimage, setCoupleimage,
     } = useContext(AppContext);
 
-    console.log(milestonesList);
+    console.log('milestonesList: ', milestonesList);
+
+    useEffect(() => {
+        const imageRef = ref(storage, `/images/${user}`);
+
+        listAll(imageRef)
+            .then((res) =>
+                Promise.all(res.items.map((item) => getDownloadURL(item)))
+            )
+            .then((urls) => setFetchedImagesList(urls))
+            .catch((error) => console.error("Failed to fetch images:", error));
+    }, [user]);
 
 
-    // useEffect(() => {
-    //     const storedUserImage = localStorage.getItem('userImage');
-    //     const storedPartnerImage = localStorage.getItem('partnerimage');
-    //     const storedCoupleImage = localStorage.getItem('coupleimage');
-    //     const storedMilestonesList = localStorage.getItem('milestonesList');
 
-    //     if (storedUserImage) setUser(storedUserImage);
-    //     if (storedPartnerImage) setPartner(storedPartnerImage);
-    //     if (storedCoupleImage) setCouple(storedCoupleImage);
-    //     if (storedMilestonesList) setMilestonesList(JSON.parse(storedMilestonesList));
-    // }, [setUser, setPartner, setCouple, setMilestonesList]);
+    useEffect(() => {
+        const storedUserImage = localStorage.getItem('userImage');
+        const storedPartnerImage = localStorage.getItem('partnerimage');
+        const storedCoupleImage = localStorage.getItem('coupleimage');
+        const storedFetchedImagesList = localStorage.getItem('fetchedImagesList');
 
 
-    // useEffect(() => {
-    //     if (userImage) localStorage.setuserImage('userImage', userImage);
-    // }, [userImage]);
+        if (storedUserImage) setUser(storedUserImage);
+        if (storedPartnerImage) setPartner(storedPartnerImage);
+        if (storedCoupleImage) setCouple(storedCoupleImage);
+        if (storedFetchedImagesList) setFetchedImagesList(storedFetchedImagesList);
 
-    // useEffect(() => {
-    //     if (partnerimage) localStorage.setPartnerimage('partnerimage', partnerimage);
-    // }, [partnerimage]);
+    }, [setUser, setPartner, setCouple, setFetchedImagesList]);
 
-    // useEffect(() => {
-    //     if (coupleimage) localStorage.setCoupleimage('coupleimage', coupleimage);
-    // }, [coupleimage]);
 
-    // // useEffect(() => {
-    // //     if (milestonesList) localStorage.setMilestonesList('milestonesList', JSON.stringify(milestonesList));
-    // // }, [milestonesList]);
+    useEffect(() => {
+        if (userImage) localStorage.setuserImage('userImage', userImage);
+    }, [userImage]);
 
-    // const useLocalStorageState = (key, state, setState) => {
-    //     useEffect(() => {
-    //         const storedValue = localStorage.getItem(key);
-    //         if (storedValue) setState(storedValue);
-    //     }, [setState]);
+    useEffect(() => {
+        if (partnerimage) localStorage.setPartnerimage('partnerimage', partnerimage);
+    }, [partnerimage]);
 
-    //     useEffect(() => {
-    //         if (state) localStorage.setItem(key, state);
-    //     }, [key, state]);
-    // };
+    useEffect(() => {
+        if (coupleimage) localStorage.setCoupleimage('coupleimage', coupleimage);
+    }, [coupleimage]);
+
 
     useLocalStorageState('user', user, setUser);
     useLocalStorageState('partner', partner, setPartner);
     useLocalStorageState('couple', couple, setCouple);
     useLocalStorageState('imageList', fetchedImagesList, setFetchedImagesList)
-    //   useLocalStorageState('milestonesList', milestonesList, setMilestonesList);
-
-
-
-    const userRef = ref(storage, `/user/${user}/`)
-    const partnerRef = ref(storage, `/partner/${partner}/`)
-    const coupleRef = ref(storage, `/couple/${couple}/`)
-
-    const imageRef = ref(storage, `/images/`)
-
 
 
     useEffect(() => {
-        if (!fetchedImagesList.length) {
-            // const imageRefs = [
-            //     ref(storage, `user/${user}`),
-            //     ref(storage, `partner/${partner}`),
-            //     ref(storage, `couple/${couple}`)
-            // ];
-            // Promise.all(imageRefs.map(ref => listAll(ref).then(res => Promise.all(res.items.map(item => getDownloadURL(item))))))
-            //     .then(urls => setFetchedImagesList(urls.flat()));
-            const imageRef = ref(storage, `/images/${user}`);
-
-            listAll(imageRef)
-                .then((res) =>
-                    Promise.all(res.items.map((item) => getDownloadURL(item)))
-                )
-                .then((urls) => setFetchedImagesList(urls))
-                .catch((error) => console.error("Failed to fetch images:", error));
+        const storedImageList = localStorage.getItem('imageList');
+        if (storedImageList) {
+            setFetchedImagesList(JSON.parse(storedImageList));
         }
     }, []);
 
-    console.log(fetchedImagesList);
+    console.log('Images: ', fetchedImagesList);
 
 
+    useEffect(() => {
+        const storedMilestonesList = localStorage.getItem('milestonesList');
+        if (storedMilestonesList) setMilestonesList(JSON.parse(storedMilestonesList));
+
+    }, [setMilestonesList])
+
+    useEffect(() => {
+        if (milestonesList) localStorage.setItem('milestonesList', JSON.stringify(milestonesList));
+    }, [milestonesList]);
 
     return (
         <>
             <div className="bg-pink-200 h-full w-full">
                 <div className="flex flex-col items-center justify-center gap-y-5">
                     {/* top banner */}
-
 
                     <div className="flex justify-center items-center w-full bg-pink-500 py-8 rounded-full relative max-w-xl mx-auto mt-10">
                         {/* Left Image */}
@@ -136,18 +117,14 @@ const GreetingCard = () => {
                             />
                         </div>
                     </div>
-
-
-
                     {/* middle part */}
-
                     {/* event 1 */}
                     {
                         milestonesList.map((item, index) => (
-                            <>
+                            <div className='flex items-center justify-center border' key={index}>
                                 {
                                     index % 2 == 0 ? (
-                                        <div key={index} className="first-event w-[30%] px-4">
+                                        <div className="first-event w-[30%] px-4">
                                             <div className="image-text flex left-0 gap-x-2">
                                                 <img className='h-24 w-24 rounded-full object-fit' src={item.image}
                                                     alt="image" />
@@ -157,30 +134,27 @@ const GreetingCard = () => {
                                                 </div>
                                             </div>
                                             <div className="svg text-center px-10">
-                                                <img className='w-full h-full' src="https://loveto.greetsu.com/Vector%205.svg" alt="svg" />
+                                                <img className='w-screen h-full' src="https://loveto.greetsu.com/Vector%205.svg" alt="svg" />
                                             </div>
                                         </div>
                                     ) : (
-                                        <div key={index} div className="second-event w-[30%] px-4" >
+                                        <div className="second-event w-[30%] px-4" >
                                             <div className="image-text flex justify-end right-0 gap-x-2">
                                                 <div className="flex-col items-center">
                                                     <p className='text-2xl text-red-400'>{item.date}</p>
                                                     <p>{item.milestone}</p>
                                                 </div>
-                                                <img className='h-24 w-24 rounded' src={item.image} alt="image" />
+                                                <img className='h-24 w-24 rounded-full' src={item.image} alt="image" />
                                             </div>
                                             <div className="svg text-center px-10">
-                                                <img className={`w-full h-full`} src="https://loveto.greetsu.com/Vector%206.svg" alt="svg" />
+                                                <img className='w-screen h-full' src="https://loveto.greetsu.com/Vector%206.svg" alt="svg" />
                                             </div>
                                         </div>
                                     )
                                 }
-
-
-                            </>
+                            </div>
                         ))
                     }
-
                     {/* couple event */}
                     {
                         milestonesList.length % 2 == 0 ? (
@@ -220,9 +194,7 @@ const GreetingCard = () => {
                     </div>
                 </div>
             </div >
-
         </>
-
     );
 }
 

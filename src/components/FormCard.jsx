@@ -7,73 +7,30 @@ import { v4 } from 'uuid';
 import { useLocalStorageState } from '../helper/useLocalStorageState';
 
 
-
-
 const FormCard = () => {
-  const { user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestonesList, setMilestonesList, milestoneOptions, setFetchedImagesList } = useContext(AppContext);
+  const { user, setUser, partner, setPartner, couple, setCouple, userImage, setUserImage, partnerimage, setPartnerimage, coupleimage, setCoupleimage, milestonesList, setMilestonesList, milestoneOptions, setFetchedImagesList, fetchedImagesList } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   console.log(milestoneOptions);
 
-
-  // useEffect(() => {
-  //   const storedUser = localStorage.getItem('user');
-  //   if (storedUser) setUser(storedUser);
-  // }, [setUser]);
-
-  // useEffect(() => {
-  //   if (user) localStorage.setItem('user', user);
-  // }, [user]);
-
-  // useEffect(() => {
-  //   const storedPartner = localStorage.getItem('partner');
-  //   if (storedPartner) setPartner(storedPartner);
-  // }, [setPartner]);
-
-  // useEffect(() => {
-  //   if (partner) localStorage.setItem('partner', partner);
-  // }, [partner]);
-
-  // useEffect(() => {
-  //   const storedCouple = localStorage.getItem('couple');
-  //   if (storedCouple) setCouple(storedCouple);
-  // }, [setPartner]);
-
-  // useEffect(() => {
-  //   if (couple) localStorage.setItem('couple', couple);
-  // }, [couple]);
-
-  // useEffect(() => {
-  //   const storedMilestoneList = JSON.parse(localStorage.getItem('milestonelist'));
-  //   if (storedMilestoneList) setMilestonesList(storedMilestoneList);
-  // }, [setMilestonesList]);
-
-  // useEffect(() => {
-  //   if (milestonesList.length) {
-  //     localStorage.setItem('milestonelist', JSON.stringify(milestonesList));
-  //   }
-  // }, [milestonesList]);
-
-
-  // const useLocalStorageState = (key, state, setState) => {
-  //   useEffect(() => {
-  //     const storedValue = localStorage.getItem(key);
-  //     if (storedValue) setState(storedValue);
-  //   }, [setState]);
-
-  //   useEffect(() => {
-  //     if (state) localStorage.setItem(key, state);
-  //   }, [key, state]);
-  // };
-
   useLocalStorageState('user', user, setUser);
   useLocalStorageState('partner', partner, setPartner);
   useLocalStorageState('couple', couple, setCouple);
-  // useLocalStorageState('milestonesList', milestonesList, setMilestonesList);
+  useLocalStorageState('imageList', fetchedImagesList, setFetchedImagesList)
 
+  useEffect(() => {
+    const storedMilestonesList = localStorage.getItem('milestonesList');
+    if (storedMilestonesList) setMilestonesList(JSON.parse(storedMilestonesList));
 
+  }, [setMilestonesList])
+
+  useEffect(() => {
+    if (milestonesList) localStorage.setItem('milestonesList', JSON.stringify(milestonesList));
+  }, [milestonesList]);
+
+  console.log(fetchedImagesList);
 
 
 
@@ -81,7 +38,6 @@ const FormCard = () => {
     const updatedList = [...milestonesList];
 
     if (field === 'milestone') {
-      // Find the image URL for the selected milestone
       const selectedMilestone = milestoneOptions.find(option => option.name === value);
       if (selectedMilestone) {
         updatedList[index].image = selectedMilestone.image;
@@ -95,7 +51,7 @@ const FormCard = () => {
     updatedList[index][field] = value;
     setMilestonesList(updatedList);
 
-    console.log("Updated milestonesList:", updatedList); // Check the updated milestonesList
+    console.log("Updated milestonesList:", updatedList);
   };
 
 
@@ -131,6 +87,16 @@ const FormCard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('partner');
+    localStorage.removeItem('couple');
+    localStorage.removeItem('milestonesList');
+    setMilestonesList([{ milestone: '', date: '', image: '' }]);
+  }, []);
+
+  console.log(milestonesList, "options: ", milestoneOptions);
 
   console.log(userImage, partnerimage, coupleimage);
 
