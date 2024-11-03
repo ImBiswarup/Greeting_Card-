@@ -5,6 +5,7 @@ import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { v4 } from 'uuid';
 import { useLocalStorageState } from '../helper/useLocalStorageState';
+import MilestoneSelector from './MilestoneSelector';
 
 
 const FormCard = () => {
@@ -14,6 +15,13 @@ const FormCard = () => {
   const navigate = useNavigate();
 
   console.log(milestoneOptions);
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredOptions = milestoneOptions
+    .filter(option => option.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
 
   useLocalStorageState('user', user, setUser);
   useLocalStorageState('partner', partner, setPartner);
@@ -161,32 +169,47 @@ const FormCard = () => {
             <h1 className='text-center font-bold text-xl'>Add your journey milestones</h1>
 
             {milestonesList.map((milestoneObj, index) => (
-              <div key={index} className="flex items-center justify-between gap-x-5 mt-2">
-                <div className="w-[45%]">
-                  <select
-                    value={milestoneObj.milestone || ""}
-                    onChange={(e) => handleMilestoneChange(index, 'milestone', e.target.value)}
-                    className="border border-gray-300 rounded-lg w-full h-10 pl-3 bg-purple-200"
-                  >
-                    <option value="" disabled>Select a milestone</option>
-                    {milestoneOptions.map((option, i) => (
-                      <option key={i} value={option.name || option}>{option.name || option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="w-[45%] flex items-center">
-                  <input
-                    type="date"
-                    value={milestoneObj.date || ""}
-                    onChange={(e) => handleMilestoneChange(index, 'date', e.target.value)}
-                    className="rounded h-10 pl-3 bg-purple-200 w-full"
-                  />
-                  <button onClick={() => handleDeleteMilestone(index)} className="ml-2">
-                    🗑️
-                  </button>
-                </div>
-              </div>
+              // <div key={index} className="flex items-center justify-between gap-x-5 mt-2">
+              //   <div className="w-[45%]">
+              //     <select
+              //       value={milestoneObj.milestone || ""}
+              //       onChange={(e) => handleMilestoneChange(index, 'milestone', e.target.value)}
+              //       className="border border-gray-300 rounded-lg w-full h-10 pl-3 bg-purple-200"
+              //     >
+              //       <option value="" disabled>Select a milestone</option>
+              //       {[...milestoneOptions]
+              //         .sort((a, b) => a.name.localeCompare(b.name))
+              //         .map((option, i) => (
+              //           <option key={i} value={option.name}>{option.name}</option>
+              //         ))}
+              //     </select>
+              //   </div>
+
+              //   <div className="w-[45%] flex items-center">
+              //     <input
+              //       type="date"
+              //       value={milestoneObj.date || ""}
+              //       onChange={(e) => handleMilestoneChange(index, 'date', e.target.value)}
+              //       className="rounded h-10 pl-3 bg-purple-200 w-full"
+              //     />
+              //     <button onClick={() => handleDeleteMilestone(index)} className="ml-2">
+              //       🗑️
+              //     </button>
+              //   </div>
+              // </div>
+
+              <MilestoneSelector
+                handleMilestoneChange={handleMilestoneChange}
+                handleDeleteMilestone={handleDeleteMilestone}
+                milestonesList={milestonesList}
+              />
             ))}
+
+            {/* <MilestoneSelector
+              handleMilestoneChange={handleMilestoneChange}
+              handleDeleteMilestone={handleDeleteMilestone}
+              milestonesList={milestonesList}
+            /> */}
 
 
             <button

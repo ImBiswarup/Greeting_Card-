@@ -51,15 +51,15 @@ const GreetingCard = () => {
 
 
     useEffect(() => {
-        if (userImage) localStorage.setuserImage('userImage', userImage);
+        if (userImage) localStorage.setItem('userImage', userImage);
     }, [userImage]);
 
     useEffect(() => {
-        if (partnerimage) localStorage.setPartnerimage('partnerimage', partnerimage);
+        if (partnerimage) localStorage.setItem('partnerimage', partnerimage);
     }, [partnerimage]);
 
     useEffect(() => {
-        if (coupleimage) localStorage.setCoupleimage('coupleimage', coupleimage);
+        if (coupleimage) localStorage.setItem('coupleimage', coupleimage);
     }, [coupleimage]);
 
 
@@ -69,12 +69,12 @@ const GreetingCard = () => {
     useLocalStorageState('imageList', fetchedImagesList, setFetchedImagesList)
 
 
-    useEffect(() => {
-        const storedImageList = localStorage.getItem('imageList');
-        if (storedImageList) {
-            setFetchedImagesList(JSON.parse(storedImageList));
-        }
-    }, []);
+    // useEffect(() => {
+    //     const storedImageList = localStorage.getItem('imageList');
+    //     if (storedImageList) {
+    //         setFetchedImagesList(JSON.parse(storedImageList));
+    //     }
+    // }, []);
 
     console.log('Images: ', fetchedImagesList);
 
@@ -88,6 +88,19 @@ const GreetingCard = () => {
     useEffect(() => {
         if (milestonesList) localStorage.setItem('milestonesList', JSON.stringify(milestonesList));
     }, [milestonesList]);
+
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
+
 
     return (
         <>
@@ -121,7 +134,7 @@ const GreetingCard = () => {
                     {/* event 1 */}
                     {
                         milestonesList.map((item, index) => (
-                            <div className='flex items-center justify-center border' key={index}>
+                            <div className='flex items-center justify-center' key={index}>
                                 {
                                     index % 2 == 0 ? (
                                         <div className="first-event w-[30%] px-4">
@@ -129,7 +142,7 @@ const GreetingCard = () => {
                                                 <img className='h-24 w-24 rounded-full object-fit' src={item.image}
                                                     alt="image" />
                                                 <div className="flex-col items-center">
-                                                    <p className='text-2xl text-red-400'>{item.date}</p>
+                                                    <p className='text-2xl text-red-400'>{formatDate(item.date)}</p>
                                                     <p>{item.milestone}</p>
                                                 </div>
                                             </div>
@@ -141,7 +154,7 @@ const GreetingCard = () => {
                                         <div className="second-event w-[30%] px-4" >
                                             <div className="image-text flex justify-end right-0 gap-x-2">
                                                 <div className="flex-col items-center">
-                                                    <p className='text-2xl text-red-400'>{item.date}</p>
+                                                    <p className='text-2xl text-red-400'>{formatDate(item.date)}</p>
                                                     <p>{item.milestone}</p>
                                                 </div>
                                                 <img className='h-24 w-24 rounded-full' src={item.image} alt="image" />
