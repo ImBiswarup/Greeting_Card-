@@ -6,6 +6,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { v4 } from 'uuid';
 import { useLocalStorageState } from '../helper/useLocalStorageState';
 import MilestoneSelector from './MilestoneSelector';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const FormCard = () => {
@@ -15,7 +17,6 @@ const FormCard = () => {
   const navigate = useNavigate();
 
   console.log(milestoneOptions);
-  const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredOptions = milestoneOptions
@@ -66,10 +67,23 @@ const FormCard = () => {
   const handleDeleteMilestone = (index) => {
     const updatedList = milestonesList.filter((_, i) => i !== index);
     setMilestonesList(updatedList);
+
+    if (updatedList.length <= 2) {
+      toast("Atleast 2 Milestones is required")
+    }
+    return updatedList;
   };
 
   const addMilestone = () => {
-    setMilestonesList([...milestonesList, { milestone: '', date: '', image: '' }]);
+    setMilestonesList((prevList) => {
+      const updatedList = [...prevList, { milestone: '', date: '', image: '' }];
+
+      if (updatedList.length === 10) {
+        toast("You have added 10 milestones!");
+      }
+
+      return updatedList;
+    });
   };
 
   const uploadAndFetchImageURL = async (image, prefix) => {
@@ -81,6 +95,15 @@ const FormCard = () => {
 
   const uploadItems = async () => {
     setLoading(true);
+    // if (!user || !partner || !userImage || !partnerimage) {
+    //   toast("No data specified!!!")
+    // }
+    if (!user || !partner) {
+      toast("No username or partner name specified");
+    }
+    else if (!userImage || !partnerimage) {
+      toast("no user image and partner image specified")
+    }
     try {
       const [userURL, partnerURL, coupleURL] = await Promise.all([
         uploadAndFetchImageURL(userImage, "user"),
@@ -88,7 +111,9 @@ const FormCard = () => {
         uploadAndFetchImageURL(coupleimage, "couple")
       ]);
       setFetchedImagesList([userURL, partnerURL, coupleURL]);
-      navigate(`/${user}`);
+      if (user && userImage && partner && partnerimage) {
+        navigate(`/${user}`);
+      }
     } catch (error) {
       console.error("Failed to upload images:", error);
     } finally {
@@ -104,9 +129,43 @@ const FormCard = () => {
     setMilestonesList([{ milestone: '', date: '', image: '' }]);
   }, []);
 
-  console.log(milestonesList, "options: ", milestoneOptions);
+  console.log("selected milestones: ", milestonesList, "options: ", milestoneOptions);
 
   console.log(userImage, partnerimage, coupleimage);
+
+  const CustomDropdown = ({ options, selectedOption, onSelect }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleOptionClick = (option) => {
+      onSelect(option);
+      setIsOpen(false);
+    };
+
+    return (
+      <div className="relative w-full">
+        <button
+          className="w-full h-10 border border-gray-300 rounded-lg pl-3 pr-3 text-left bg-purple-200"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {selectedOption || "Select a milestone"}
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-10 w-full border border-gray-300 bg-white rounded-lg mt-1 overflow-y-auto max-h-40">
+            {options.map((option, index) => (
+              <div
+                key={index}
+                className="px-3 py-2 hover:bg-purple-200 cursor-pointer"
+                onClick={() => handleOptionClick(option.name)}
+              >
+                {option.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -114,11 +173,11 @@ const FormCard = () => {
         <div className="flex flex-col items-center justify-center">
           <h1 className='p-2 font-bold text-2xl'>Create your Love Timeline</h1>
           {/* first box */}
-          <div className="border-dashed border-2 border-black p-5 mt-2 rounded-xl w-[45%]">
+          <div className="border-dashed border-2 border-black p-5 mt-2 rounded-xl w-full sm:w-[65%]">
             <h2 className='text-center font-bold text-xl'>Add your details</h2>
             <p><span className='text-xl'>Your name</span></p>
             <input
-              className='w-full rounded bg-pink-200 h-10 pl-2'
+              className='w-full rounded bg-transparent focus:bg-pink-100 h-12 pl-2'
               type="text"
               name="name"
               id="name"
@@ -126,7 +185,8 @@ const FormCard = () => {
               onChange={(e) => { setUser(e.target.value) }}
               placeholder='Enter name here' />
             <p><span className='text-xl'>Partner name</span></p>
-            <input className='w-full rounded bg-pink-200 h-10 pl-2'
+            <input
+              className='w-full rounded bg-transparent focus:bg-pink-100 h-12 pl-2'
               type="text"
               name="partnername"
               id="partnername"
@@ -135,101 +195,101 @@ const FormCard = () => {
               placeholder='Enter partner name here' />
             <p><span className='text-xl'>Couple Name</span> </p>
             <input
-              className='w-full rounded bg-pink-200 h-10 pl-2'
+              className='w-full rounded bg-transparent focus:bg-pink-100 h-12 pl-2'
               type="text"
               name="couplename"
               id="couplename"
               value={couple}
               onChange={(e) => { setCouple(e.target.value) }}
               placeholder='Enter name here' />
-            <p><span className='text-xl'>Your Image </span>(recomemded aspect ratio of image 1:1)</p>
-            <input
-              className='w-full rounded bg-pink-200 h-10'
-              type="file"
-              name="image"
-              id="image"
-              onChange={(e) => { setUserImage(e.target.files[0]) }} />
-            <p><span className='text-xl'>Partner Image</span> (recomemded aspect ratio of image 1:1)</p>
-            <input
-              className='w-full rounded bg-pink-200 h-10'
-              type="file"
-              name="partnerimage"
-              id="partnerimage"
-              onChange={(e) => { setPartnerimage(e.target.files[0]) }} />
-            <p><span className='text-xl'>Couple Image</span> (recomemded aspect ratio of image 1:1)</p>
-            <input
-              className='w-full rounded bg-pink-200 h-10'
-              type="file"
-              name="coupleimage"
-              id="coupleimage"
-              onChange={(e) => { setCoupleimage(e.target.files[0]) }} />
+            <div className="mt-4">
+              <label className="block text-lg font-medium mb-2">
+                Your Image <span className="text-gray-500">(recommended aspect ratio of image 1:1)</span>
+              </label>
+              <label className="flex items-center justify-between w-full h-12 px-4 rounded-lg border-dashed border-2 border-purple-400 bg-purple-200 text-gray-700 cursor-pointer hover:bg-purple-300 transition">
+                <span>{userImage ? userImage.name : "No file chosen"}</span>
+                <span>Choose File</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setUserImage(e.target.files[0])}
+                />
+              </label>
+            </div>
+            <div className="mt-4">
+              <label className="block text-lg font-medium mb-2">
+                Partner Image <span className="text-gray-500">(recommended aspect ratio of image 1:1)</span>
+              </label>
+              <label className="flex items-center justify-between w-full h-12 px-4 rounded-lg border-dashed border-2 border-purple-400 bg-purple-200 text-gray-700 cursor-pointer hover:bg-purple-300 transition">
+                <span>{partnerimage ? partnerimage.name : "No file chosen"}</span>
+                <span>Choose File</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setPartnerimage(e.target.files[0])}
+                />
+              </label>
+            </div>
+            <div className="mt-4">
+              <label className="block text-lg font-medium mb-2">
+                Couple Image <span className="text-gray-500">(Optional)</span>
+              </label>
+              <label className="flex items-center justify-between w-full h-12 px-4 rounded-lg border-dashed border-2 border-purple-400 bg-purple-200 text-gray-700 cursor-pointer hover:bg-purple-300 transition">
+                <span>{coupleimage ? coupleimage.name : "No file chosen"}</span>
+                <span>Choose File</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setCoupleimage(e.target.files[0])}
+                />
+              </label>
+            </div>
           </div>
           {/* second box */}
-          <div className="border-dashed border-2 border-black p-5 mt-5 rounded-xl w-[45%]">
+          <div className="border-dashed border-2 border-black p-5 mt-5 rounded-xl w-full sm:w-[65%]">
             <h1 className='text-center font-bold text-xl'>Add your journey milestones</h1>
 
             {milestonesList.map((milestoneObj, index) => (
-              // <div key={index} className="flex items-center justify-between gap-x-5 mt-2">
-              //   <div className="w-[45%]">
-              //     <select
-              //       value={milestoneObj.milestone || ""}
-              //       onChange={(e) => handleMilestoneChange(index, 'milestone', e.target.value)}
-              //       className="border border-gray-300 rounded-lg w-full h-10 pl-3 bg-purple-200"
-              //     >
-              //       <option value="" disabled>Select a milestone</option>
-              //       {[...milestoneOptions]
-              //         .sort((a, b) => a.name.localeCompare(b.name))
-              //         .map((option, i) => (
-              //           <option key={i} value={option.name}>{option.name}</option>
-              //         ))}
-              //     </select>
-              //   </div>
+              <div key={index} className="flex items-center justify-between gap-x-5 mt-2">
+                <div className="w-[45%]">
+                  <CustomDropdown
+                    options={milestoneOptions.sort((a, b) => a.name.localeCompare(b.name))}
+                    selectedOption={milestoneObj.milestone}
+                    onSelect={(value) => handleMilestoneChange(index, 'milestone', value)}
+                  />
+                </div>
 
-              //   <div className="w-[45%] flex items-center">
-              //     <input
-              //       type="date"
-              //       value={milestoneObj.date || ""}
-              //       onChange={(e) => handleMilestoneChange(index, 'date', e.target.value)}
-              //       className="rounded h-10 pl-3 bg-purple-200 w-full"
-              //     />
-              //     <button onClick={() => handleDeleteMilestone(index)} className="ml-2">
-              //       🗑️
-              //     </button>
-              //   </div>
-              // </div>
-
-              <MilestoneSelector
-                handleMilestoneChange={handleMilestoneChange}
-                handleDeleteMilestone={handleDeleteMilestone}
-                milestonesList={milestonesList}
-              />
+                <div className="w-[45%] flex items-center">
+                  <input
+                    type="date"
+                    value={milestoneObj.date || ""}
+                    onChange={(e) => handleMilestoneChange(index, 'date', e.target.value)}
+                    className="rounded h-10 pl-3 bg-purple-200 w-full"
+                  />
+                  <button onClick={() => handleDeleteMilestone(index)} className={`ml-2 ${milestonesList.length >= 3 ? "" : "hidden"}`}>
+                    🗑️
+                  </button>
+                </div>
+              </div>
             ))}
-
-            {/* <MilestoneSelector
-              handleMilestoneChange={handleMilestoneChange}
-              handleDeleteMilestone={handleDeleteMilestone}
-              milestonesList={milestonesList}
-            /> */}
-
-
             <button
-              className='flex mx-auto bg-purple-400 rounded mt-5 p-3 hover:bg-purple-700 transition hover:text-white text-xl font-bold'
+              className={`flex mx-auto bg-purple-400 rounded mt-5 p-3 hover:bg-purple-700 transition hover:text-white text-xl font-bold  ${milestonesList.length >= 10 ? "hidden" : ""}`}
               onClick={addMilestone}
             >
               Add Milestone
             </button>
-
+            <ToastContainer />
           </div>
+
+
           {/* submit button */}
-          <div className="button flex items-center justify-center my-8">
-            {/* <Link to={`/${user}`}> */}
+          <div className={`button flex items-center justify-center my-8`}>
             <button
               onClick={uploadItems}
               disabled={loading}
-              className='p-3 bg-purple-400 hover:bg-purple-600 rounded transition hover:text-white font-bold text-xl'>
+              className={`p-3 bg-purple-400 hover:bg-purple-600 rounded transition hover:text-white font-bold text-xl`}>
               {loading ? 'Creating Timeline...' : 'Create Timeline'}
             </button>
-            {/* </Link> */}
           </div>
         </div>
       </div>

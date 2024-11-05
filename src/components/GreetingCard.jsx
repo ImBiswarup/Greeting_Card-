@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/Appcontext';
 import { listAll, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
 import { useLocalStorageState } from '../helper/useLocalStorageState';
 
 
@@ -68,14 +66,6 @@ const GreetingCard = () => {
     useLocalStorageState('couple', couple, setCouple);
     useLocalStorageState('imageList', fetchedImagesList, setFetchedImagesList)
 
-
-    // useEffect(() => {
-    //     const storedImageList = localStorage.getItem('imageList');
-    //     if (storedImageList) {
-    //         setFetchedImagesList(JSON.parse(storedImageList));
-    //     }
-    // }, []);
-
     console.log('Images: ', fetchedImagesList);
 
 
@@ -110,7 +100,7 @@ const GreetingCard = () => {
 
                     <div className="flex justify-center items-center w-full bg-pink-500 py-8 rounded-full relative max-w-xl mx-auto mt-10">
                         {/* Left Image */}
-                        <div className="absolute left-0 transform -translate-x-6">
+                        <div className="absolute left-0 transform -translate-x-28">
                             <img
                                 src={[fetchedImagesList[2]]}
                                 alt="Profile Left"
@@ -122,7 +112,7 @@ const GreetingCard = () => {
                             When {user} met {partner}
                         </h1>
                         {/* Right Image */}
-                        <div className="absolute right-0 transform translate-x-6">
+                        <div className="absolute right-0 transform translate-x-28">
                             <img
                                 src={[fetchedImagesList[1]]}
                                 alt="Profile Right"
@@ -173,7 +163,7 @@ const GreetingCard = () => {
                         milestonesList.length % 2 == 0 ? (
                             <div className="first-event w-[30%] px-4">
                                 <div className={`image-text flex gap-x-3 ${milestonesList.length % 2 === 0 ? "justify-start" : "justify-end"}`}>
-                                    <img className='h-24 w-24 rounded-full object-fill' src={fetchedImagesList[0]} alt="image" />
+                                    <img className='h-32 w-32 rounded-full' src={fetchedImagesList[0]} alt="image" />
                                     <div className="flex-col items-center">
                                         <p className='text-2xl text-red-400'>{couple}</p>
                                         <p>Loveto for life</p>
@@ -188,7 +178,7 @@ const GreetingCard = () => {
                                         <p className='text-2xl text-red-400'>{couple}</p>
                                         <p>Loveto for life</p>
                                     </div>
-                                    <img className='h-24 w-24 rounded' src={fetchedImagesList[0]} alt="image" />
+                                    <img className='h-32 w-32 rounded-full' src={fetchedImagesList[0]} alt="image" />
                                 </div>
 
                             </div>
