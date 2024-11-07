@@ -13,12 +13,11 @@ const GreetingCard = () => {
         partner, setPartner,
         couple, setCouple,
         milestonesList, setMilestonesList,
-        userImage, setUserImage,
-        partnerimage, setPartnerimage,
-        coupleimage, setCoupleimage,
+        userImage,
+        partnerimage,
+        coupleimage,
     } = useContext(AppContext);
 
-    console.log('milestonesList: ', milestonesList);
 
     useEffect(() => {
         const imageRef = ref(storage, `/images/${user}`);
@@ -65,8 +64,6 @@ const GreetingCard = () => {
     useLocalStorageState('partner', partner, setPartner);
     useLocalStorageState('couple', couple, setCouple);
     useLocalStorageState('imageList', fetchedImagesList, setFetchedImagesList)
-
-    console.log('Images: ', fetchedImagesList);
 
 
     useEffect(() => {

@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/Appcontext';
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { v4 } from 'uuid';
 import { useLocalStorageState } from '../helper/useLocalStorageState';
-import MilestoneSelector from './MilestoneSelector';
+import { CustomDropdown } from './CustomDropdown'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,7 +16,6 @@ const FormCard = () => {
 
   const navigate = useNavigate();
 
-  console.log(milestoneOptions);
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredOptions = milestoneOptions
@@ -39,7 +38,6 @@ const FormCard = () => {
     if (milestonesList) localStorage.setItem('milestonesList', JSON.stringify(milestonesList));
   }, [milestonesList]);
 
-  console.log(fetchedImagesList);
 
 
 
@@ -50,17 +48,14 @@ const FormCard = () => {
       const selectedMilestone = milestoneOptions.find(option => option.name === value);
       if (selectedMilestone) {
         updatedList[index].image = selectedMilestone.image;
-        console.log(`Milestone selected: ${value}, Image URL set: ${selectedMilestone.image}`);
       } else {
         updatedList[index].image = '';
-        console.log(`Milestone selected: ${value}, No image URL found.`);
       }
     }
 
     updatedList[index][field] = value;
     setMilestonesList(updatedList);
 
-    console.log("Updated milestonesList:", updatedList);
   };
 
 
@@ -129,43 +124,6 @@ const FormCard = () => {
     setMilestonesList([{ milestone: '', date: '', image: '' }]);
   }, []);
 
-  console.log("selected milestones: ", milestonesList, "options: ", milestoneOptions);
-
-  console.log(userImage, partnerimage, coupleimage);
-
-  const CustomDropdown = ({ options, selectedOption, onSelect }) => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const handleOptionClick = (option) => {
-      onSelect(option);
-      setIsOpen(false);
-    };
-
-    return (
-      <div className="relative w-full">
-        <button
-          className="w-full h-10 border border-gray-300 rounded-lg pl-3 pr-3 text-left bg-purple-200"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {selectedOption || "Select a milestone"}
-        </button>
-
-        {isOpen && (
-          <div className="absolute z-10 w-full border border-gray-300 bg-white rounded-lg mt-1 overflow-y-auto max-h-40">
-            {options.map((option, index) => (
-              <div
-                key={index}
-                className="px-3 py-2 hover:bg-purple-200 cursor-pointer"
-                onClick={() => handleOptionClick(option.name)}
-              >
-                {option.name}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div>
@@ -177,31 +135,31 @@ const FormCard = () => {
             <h2 className='text-center font-bold text-xl'>Add your details</h2>
             <p><span className='text-xl'>Your name</span></p>
             <input
-              className='w-full rounded bg-transparent focus:bg-pink-100 h-12 pl-2'
+              className='w-full rounded bg-transparent focus:bg-purple-300 h-12 pl-2'
               type="text"
               name="name"
               id="name"
               value={user}
               onChange={(e) => { setUser(e.target.value) }}
-              placeholder='Enter name here' />
+              placeholder='Ex: virat Kohli' />
             <p><span className='text-xl'>Partner name</span></p>
             <input
-              className='w-full rounded bg-transparent focus:bg-pink-100 h-12 pl-2'
+              className='w-full rounded bg-transparent focus:bg-purple-300 h-12 pl-2'
               type="text"
               name="partnername"
               id="partnername"
               value={partner}
               onChange={(e) => { setPartner(e.target.value) }}
-              placeholder='Enter partner name here' />
-            <p><span className='text-xl'>Couple Name</span> </p>
+              placeholder='Ex: Anushka Sharma' />
+            <p><span className='text-xl'>Couple Name<span className="text-gray-500">(Optional)</span></span> </p>
             <input
-              className='w-full rounded bg-transparent focus:bg-pink-100 h-12 pl-2'
+              className='w-full rounded bg-transparent focus:bg-purple-300 h-12 pl-2'
               type="text"
               name="couplename"
               id="couplename"
               value={couple}
               onChange={(e) => { setCouple(e.target.value) }}
-              placeholder='Enter name here' />
+              placeholder='Ex: Virushka' />
             <div className="mt-4">
               <label className="block text-lg font-medium mb-2">
                 Your Image <span className="text-gray-500">(recommended aspect ratio of image 1:1)</span>
