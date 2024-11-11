@@ -117,10 +117,13 @@ const FormCard = () => {
   };
 
   useEffect(() => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('partner');
-    localStorage.removeItem('couple');
-    localStorage.removeItem('milestonesList');
+    // localStorage.removeItem('user');
+    // localStorage.removeItem('partner');
+    // localStorage.removeItem('couple');
+    // localStorage.removeItem('milestonesList');
+    setUser("");
+    setPartner("");
+    setCouple("");
     setMilestonesList([{ milestone: '', date: '', image: '' }]);
   }, []);
 

@@ -16,7 +16,7 @@ const Header = () => {
                     <div className='text-xs flex items-center gap-x-1'>
                         <p className="text-sm text-gray-500">Powered by
                         </p>
-                        <img className='h-10 w-12' src="https://loveto.greetsu.com/logo.svg" alt="greetsU_logo" />
+                        <img className='h-10 w-12 mt-1' src="https://loveto.greetsu.com/logo.svg" alt="greetsU_logo" />
                     </div>
                 </div>
             </div>
