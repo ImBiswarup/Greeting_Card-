@@ -3,6 +3,11 @@ import { AppContext } from '../context/Appcontext';
 import { listAll, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
 import { useLocalStorageState } from '../helper/useLocalStorageState';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaWhatsapp } from "react-icons/fa";
+import { CiShare2 } from "react-icons/ci";
+
 
 
 const GreetingCard = () => {
@@ -29,6 +34,16 @@ const GreetingCard = () => {
             .then((urls) => setFetchedImagesList(urls))
             .catch((error) => console.error("Failed to fetch images:", error));
     }, [user]);
+
+    const sendInWhatsapp = () => {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            const whatsappWebUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(url)}`;
+            window.open(whatsappWebUrl, "_blank");
+        }).catch((err) => {
+            console.error("Copy failed:", err);
+        });
+    };
 
 
 
@@ -95,28 +110,29 @@ const GreetingCard = () => {
                 <div className="flex flex-col items-center justify-center gap-y-5">
                     {/* top banner */}
 
-                    <div className="flex justify-center items-center w-full bg-pink-500 py-8 rounded-full relative max-w-xl mx-auto mt-10">
+                    <div className="flex flex-col items-center w-full bg-pink-500 py-8 rounded-full relative max-w-xl mx-auto mt-10">
                         {/* Left Image */}
-                        <div className="absolute left-0 transform -translate-x-28">
+                        <div className="absolute left-0 transform -translate-x-16 sm:-translate-x-20 md:-translate-x-28 lg:-translate-x-32">
                             <img
-                                src={[fetchedImagesList[2]]}
+                                src={fetchedImagesList[2]}
                                 alt="Profile Left"
-                                className="w-28 h-28 rounded-full border-4 border-white object-fit"
+                                className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white object-cover"
                             />
                         </div>
                         {/* Title */}
-                        <h1 className="text-white text-2xl font-semibold">
+                        <h1 className="text-white text-lg sm:text-xl md:text-2xl font-semibold text-center mt-12 sm:mt-0">
                             When {user} met {partner}
                         </h1>
                         {/* Right Image */}
-                        <div className="absolute right-0 transform translate-x-28">
+                        <div className="absolute right-0 transform translate-x-16 sm:translate-x-20 md:translate-x-28 lg:translate-x-32">
                             <img
-                                src={[fetchedImagesList[1]]}
+                                src={fetchedImagesList[1]}
                                 alt="Profile Right"
-                                className="w-28 h-28 rounded-full border-4 border-white object-fit"
+                                className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full border-4 border-white object-cover"
                             />
                         </div>
                     </div>
+
                     {/* middle part */}
                     {/* event 1 */}
                     {
@@ -181,17 +197,32 @@ const GreetingCard = () => {
                             </div>
                         )
                     }
-                    <div className="w-[40%] my-10">
-                        <p>share via</p>
-                        <div className="share-with flex justify-evenly my-5 text-xl">
-                            <button className='p-2 rounded-full bg-pink-400 text-black hover:bg-pink-600 hover:text-white transition'>whatsapp</button>
-                            <button className='p-2 rounded-full bg-pink-400 text-black hover:bg-pink-600 hover:text-white transition'>link</button>
+                    <div className="w-[40%] my-10 mx-auto">
+                        <p className="text-center">share via</p>
+                        <div className="share-with flex justify-center items-center gap-x-5 my-5 text-xl py-2">
+                            <button
+                                className="p-2 rounded-full bg-pink-400 text-black hover:bg-pink-600 hover:text-white transition"
+                                onClick={sendInWhatsapp}
+                            >
+                                <FaWhatsapp size={30} />
+                            </button>
+                            <button
+                                className="p-2 rounded-full bg-pink-400 text-black hover:bg-pink-600 hover:text-white transition"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    toast("URL copied to clipboard!");
+                                }}
+                            >
+                                <CiShare2 size={30} />
+                            </button>
+                            <ToastContainer />
                         </div>
                         <div className="share-buttons flex items-center flex-col gap-y-5 text-xl">
-                            <button className='w-3/4 hover:bg-transparent hover:text-black rounded h-10 bg-black text-white transition'>download app</button>
-                            <button className='w-3/4 hover:bg-transparent hover:text-black rounded h-10 bg-black text-white transition'>Explore more</button>
+                            <button className="w-3/4 hover:bg-transparent hover:text-black rounded h-10 bg-black text-white transition">download app</button>
+                            <button className="w-3/4 hover:bg-transparent hover:text-black rounded h-10 bg-black text-white transition">Explore more</button>
                         </div>
                     </div>
+
                 </div>
             </div >
         </>
