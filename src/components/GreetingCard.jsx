@@ -106,7 +106,7 @@ const GreetingCard = () => {
 
     return (
         <>
-            <div className="bg-pink-200 min-h-screen w-screen">
+            <div className="bg-pink-200 min-h-screen w-full">
                 <div className="flex flex-col items-center justify-center gap-y-5 px-4">
 
                     {/* Top Banner */}
